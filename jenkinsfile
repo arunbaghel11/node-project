@@ -1,4 +1,4 @@
-// Jenkinsfile.ci
+
 pipeline {
     agent any
     environment {
