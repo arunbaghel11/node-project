@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
     environment {
@@ -8,23 +7,30 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/arunbaghel11/node-project.git'   // GitHub repository URL
+                script {
+                    // Specifying the branch name and credentials for Git checkout
+                    git branch: 'main', url: 'https://github.com/arunbaghel11/node-project.git', credentialsId: 'github-credentials-id'
+                }
             }
         }
         stage('Build') {
             steps {
+                echo "Building Docker image..."
                 sh 'docker build -t $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG .'
             }
         }
         stage('Test') {
             steps {
-                sh 'echo Running tests...'   // Add test scripts as needed
+                echo "Running tests..."
+                // You can add actual test commands here, e.g., `npm test`
+                sh 'echo Tests passed!'
             }
         }
         stage('Push to DockerHub') {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
+                        echo "Pushing Docker image to DockerHub..."
                         sh 'docker push $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG'
                     }
                 }
@@ -33,7 +39,11 @@ pipeline {
     }
     post {
         success {
-            build job: 'cd-pipeline' 
+            echo "Pipeline succeeded! Triggering CD pipeline..."
+            build job: 'cd-pipeline', wait: false  // Triggering CD pipeline
+        }
+        failure {
+            echo "Pipeline failed!"
         }
     }
 }
