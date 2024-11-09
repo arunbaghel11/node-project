@@ -1,57 +1,49 @@
 pipeline {
     agent any
-
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub')  // Replace 'dockerhub' with your credential ID if different
+        DOCKER_HUB_REPO = 'arun662/node-project'   // DockerHub repository
+        DOCKER_IMAGE_TAG = 'latest'
     }
-
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/arunbaghel11/node-project.git', branch: 'main'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                echo 'Building Docker image...'
-                // Build Docker image using Windows-compatible commands
                 script {
-                    def dockerImage = "arun662/node-project:latest"
-                    bat "docker build -t ${dockerImage} ."
+                    // Specifying the branch name and credentials for Git checkout
+                    git branch: 'main', url: 'https://github.com/arunbaghel11/node-project.git', credentialsId: 'github'
                 }
             }
         }
-
-        stage('Test') {
+        stage('Build') {
             steps {
-                echo 'Running tests...'
-                // Assuming tests can run directly on Windows
-                bat 'npm test'
+                echo "Building Docker image..."
+                sh 'docker build -t $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG .'
             }
         }
-
-        stage('Push to DockerHub') {
-            when {
-                branch 'main'
-            }
+        stage('Test') {
             steps {
-                echo 'Pushing Docker image to DockerHub...'
+                echo "Running tests..."
+                // You can add actual test commands here, e.g., `npm test`
+                sh 'echo Tests passed!'
+            }
+        }
+        stage('Push to DockerHub') {
+            steps {
                 script {
-                    def dockerImage = "arun662/node-project:latest"
-                    bat "docker login -u %DOCKERHUB_CREDENTIALS_USR% -p %DOCKERHUB_CREDENTIALS_PSW%"
-                    bat "docker push ${dockerImage}"
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
+                        echo "Pushing Docker image to DockerHub..."
+                        sh 'docker push $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG'
+                    }
                 }
             }
         }
     }
-
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo "Pipeline succeeded! Triggering CD pipeline..."
+            build job: 'cd-pipeline', wait: false  // Triggering CD pipeline
         }
         failure {
-            echo 'Pipeline failed!'
+            echo "Pipeline failed!"
         }
     }
 }
