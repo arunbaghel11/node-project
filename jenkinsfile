@@ -16,14 +16,19 @@ pipeline {
         stage('Build') {
             steps {
                 echo "Building Docker image..."
-                sh 'docker build -t $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG .'
+                // Run docker build command with the DockerHub repository and tag
+                sh '''#!/bin/bash
+                docker build -t $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG .
+                '''
             }
         }
         stage('Test') {
             steps {
                 echo "Running tests..."
                 // You can add actual test commands here, e.g., `npm test`
-                sh 'echo Tests passed!'
+                sh '''#!/bin/bash
+                echo "Tests passed!"
+                '''
             }
         }
         stage('Push to DockerHub') {
@@ -31,7 +36,9 @@ pipeline {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
                         echo "Pushing Docker image to DockerHub..."
-                        sh 'docker push $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG'
+                        sh '''#!/bin/bash
+                        docker push $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG
+                        '''
                     }
                 }
             }
