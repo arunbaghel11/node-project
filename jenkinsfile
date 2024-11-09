@@ -9,7 +9,7 @@ pipeline {
             steps {
                 script {
                     // Specifying the branch name and credentials for Git checkout
-                    git branch: 'main', url: 'https://github.com/arunbaghel11/node-project.git', credentialsId: 'github-credentials-id'
+                    git branch: 'main', url: 'https://github.com/arunbaghel11/node-project.git', credentialsId: 'github'
                 }
             }
         }
