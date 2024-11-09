@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Article Extractor</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            padding-top: 50px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .article {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .article h2 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Article Extractor</h1>
+        <form id="urlForm" class="mt-4">
+            <div class="form-group">
+                <input type="text" id="urlInput" class="form-control" placeholder="Enter website URL" required>
+            </div>
+            <div class="form-group">
+                <input type="text" id="urlIdInput" class="form-control" placeholder="Enter URL ID" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Extract Article</button>
+        </form>
+        <div id="article" class="article d-none">
+            <h2 id="articleTitle"></h2>
+            <p id="articleContent"></p>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#urlForm').on('submit', function(e) {
+                e.preventDefault();
+                const url = $('#urlInput').val();
+                const urlId = $('#urlIdInput').val();
+                $.post('/extract', { url: url, urlId: urlId }, function(data) {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                    } else {
+                        $('#articleTitle').text(data.title);
+                        $('#articleContent').text(data.content);
+                        $('#article').removeClass('d-none');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

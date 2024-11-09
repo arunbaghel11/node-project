@@ -1,0 +1,39 @@
+// Jenkinsfile.ci
+pipeline {
+    agent any
+    environment {
+        DOCKER_HUB_REPO = 'arun662/node-project'   // DockerHub repository
+        DOCKER_IMAGE_TAG = 'latest'
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/arunbaghel11/node-project.git'   // GitHub repository URL
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'docker build -t $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG .'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'echo Running tests...'   // Add test scripts as needed
+            }
+        }
+        stage('Push to DockerHub') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                        sh 'docker push $DOCKER_HUB_REPO:$DOCKER_IMAGE_TAG'
+                    }
+                }
+            }
+        }
+    }
+    post {
+        success {
+            build job: 'cd-pipeline' 
+        }
+    }
+}
